@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Button } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Text, Button, Card, Title, Paragraph } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ReminderDetailScreen({ route, navigation }) {
@@ -12,7 +13,7 @@ export default function ReminderDetailScreen({ route, navigation }) {
       return;
     }
 
-    fetch(`http://172.16.255.164:3000/reminders/${reminder.id}`, {  // Reemplaza 192.168.1.100 con tu IP local
+    fetch(`http://172.16.255.164:3000/reminders/${reminder.id}`, {  // Reemplaza 172.16.255.164 con tu IP local
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -31,20 +32,47 @@ export default function ReminderDetailScreen({ route, navigation }) {
   };
 
   return (
-    <View>
-      <Text>Nombre: {reminder.name}</Text>
-      <Text>Fecha: {reminder.date}</Text>
-      <Text>Total: {reminder.total}</Text>
-      <Text>Detalles: {reminder.details}</Text>
-      <Button
-        title="Editar"
-        onPress={() => navigation.navigate('EditReminder', { reminder })}
-      />
-      <Button
-        title="Eliminar"
-        onPress={handleDeleteReminder}
-        color="red"
-      />
+    <View style={styles.container}>
+      <Card style={styles.card}>
+        <Card.Content>
+          <Title>Detalles del Recordatorio</Title>
+          <Paragraph>Nombre: {reminder.name}</Paragraph>
+          <Paragraph>Fecha: {reminder.date}</Paragraph>
+          <Paragraph>Total: {reminder.total}</Paragraph>
+          <Paragraph>Detalles: {reminder.details}</Paragraph>
+          <Button
+            mode="outlined"
+            onPress={() => navigation.navigate('EditReminder', { reminder })}
+            style={styles.button}
+          >
+            Editar
+          </Button>
+          <Button
+            mode="contained"
+            onPress={handleDeleteReminder}
+            style={[styles.button, styles.deleteButton]}
+          >
+            Eliminar
+          </Button>
+        </Card.Content>
+      </Card>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 16,
+  },
+  card: {
+    padding: 16,
+  },
+  button: {
+    marginTop: 16,
+  },
+  deleteButton: {
+    backgroundColor: 'red',
+  },
+});
