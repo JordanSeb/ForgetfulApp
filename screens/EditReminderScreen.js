@@ -1,3 +1,4 @@
+// EditReminderScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, Button, Title, Card } from 'react-native-paper';
@@ -11,55 +12,33 @@ export default function EditReminderScreen({ route, navigation }) {
   const [total, setTotal] = useState(reminder.total);
   const [details, setDetails] = useState(reminder.details);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [userId, setUserId] = useState(null);
-
-  useEffect(() => {
-    const fetchUserId = async () => {
-      try {
-        const id = await AsyncStorage.getItem('userId');
-        if (id) {
-          setUserId(id);
-        } else {
-          console.error("No userId found in AsyncStorage");
-        }
-      } catch (error) {
-        console.error("Error fetching userId:", error);
-      }
-    };
-
-    fetchUserId();
-  }, []);
 
   const handleEditReminder = async () => {
-    if (!userId) {
-      alert("Error: No userId found. Please restart the app.");
-      return;
-    }
-
-    const updatedReminder = {
-      userId,
-      name,
-      date: date.toISOString().split('T')[0],
-      total,
-      details,
-    };
-
-    fetch(`http://172.16.255.164:3000/reminders/${reminder.id}`, {  // Reemplaza 172.16.255.164 con tu IP local
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updatedReminder),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Response from server:", data);
-        navigation.goBack();
-      })
-      .catch((error) => {
-        console.error("Error editing reminder:", error);
-        alert("Error editing reminder: " + error.message);
+    try {
+      const userId = await AsyncStorage.getItem('userId');
+      const updatedReminder = {
+        userId,
+        name,
+        date: date.toISOString().split('T')[0],
+        total,
+        details,
+      };
+      const response = await fetch(`https://backendforgetful.onrender.com/reminders/${reminder.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedReminder),
       });
+      if (!response.ok) {
+        throw new Error('Error editing reminder');
+      }
+      console.log("Reminder edited successfully");
+      navigation.goBack();
+    } catch (error) {
+      console.error("Error editing reminder:", error);
+      alert("Error editing reminder: " + error.message);
+    }
   };
 
   return (

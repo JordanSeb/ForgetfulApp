@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// AddReminderScreen.js
+import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, Button, Title, Card } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -10,57 +11,34 @@ export default function AddReminderScreen({ navigation }) {
   const [total, setTotal] = useState('');
   const [details, setDetails] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [userId, setUserId] = useState(null);
-
-  useEffect(() => {
-    const fetchUserId = async () => {
-      try {
-        const id = await AsyncStorage.getItem('userId');
-        if (id) {
-          setUserId(id);
-        } else {
-          console.error("No userId found in AsyncStorage");
-        }
-      } catch (error) {
-        console.error("Error fetching userId:", error);
-      }
-    };
-
-    fetchUserId();
-  }, []);
 
   const handleAddReminder = async () => {
-    if (!userId) {
-      alert("Error: No userId found. Please restart the app.");
-      return;
-    }
-
-    const reminder = {
-      userId,
-      name,
-      date: date.toISOString().split('T')[0],
-      total,
-      details,
-    };
-
-    console.log("Sending reminder:", reminder);
-
-    fetch('http://172.16.255.164:3000/reminders', {  // Reemplaza 192.168.1.100 con tu IP local
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(reminder),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Response from server:", data);
-        navigation.goBack();
-      })
-      .catch((error) => {
-        console.error("Error adding reminder:", error);
-        alert("Error adding reminder: " + error.message);
+    try {
+      const userId = await AsyncStorage.getItem('userId');
+      const reminder = {
+        userId,
+        name,
+        date: date.toISOString().split('T')[0],
+        total,
+        details,
+      };
+      const response = await fetch('https://backendforgetful.onrender.com/reminders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reminder),
       });
+      if (!response.ok) {
+        throw new Error('Error adding reminder');
+      }
+      const data = await response.json();
+      console.log("Response from server:", data);
+      navigation.goBack();
+    } catch (error) {
+      console.error("Error adding reminder:", error);
+      alert("Error adding reminder: " + error.message);
+    }
   };
 
   return (
@@ -115,7 +93,6 @@ export default function AddReminderScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     padding: 16,
   },
   card: {

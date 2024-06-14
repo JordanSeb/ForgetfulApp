@@ -8,14 +8,18 @@ export default function HomeScreen({ navigation }) {
   const [reminders, setReminders] = useState([]);
 
   const fetchReminders = async () => {
-    const userId = await AsyncStorage.getItem('userId');
-    fetch(`http://172.16.255.164:3000/reminders?userId=${userId}`)  // Reemplaza 172.16.255.164 con tu IP local
-      .then((response) => response.json())
-      .then((data) => setReminders(data))
-      .catch((error) => {
-        console.error("Error fetching reminders:", error);
-        alert("Error fetching reminders: " + error.message);
-      });
+    try {
+      const userId = await AsyncStorage.getItem('userId');
+      const response = await fetch(`https://backendforgetful.onrender.com/reminders?userId=${userId}`); // Actualiza la IP y el puerto según tu configuración
+      if (!response.ok) {
+        throw new Error('Error fetching reminders');
+      }
+      const data = await response.json();
+      setReminders(data);
+    } catch (error) {
+      console.error("Error fetching reminders:", error);
+      alert("Error fetching reminders: " + error.message);
+    }
   };
 
   useFocusEffect(
@@ -43,7 +47,7 @@ export default function HomeScreen({ navigation }) {
       </Button>
       <FlatList
         data={reminders}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item._id ? item._id.toString() : ''} // Verificar si _id está definido
         renderItem={renderItem}
         contentContainerStyle={styles.list}
       />

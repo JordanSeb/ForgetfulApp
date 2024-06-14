@@ -1,3 +1,4 @@
+// ReminderDetailScreen.js
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Button, Card, Title, Paragraph } from 'react-native-paper';
@@ -7,28 +8,24 @@ export default function ReminderDetailScreen({ route, navigation }) {
   const { reminder } = route.params;
 
   const handleDeleteReminder = async () => {
-    const userId = await AsyncStorage.getItem('userId');
-    if (!userId) {
-      alert("Error: No userId found. Please restart the app.");
-      return;
-    }
-
-    fetch(`http://172.16.255.164:3000/reminders/${reminder.id}`, {  // Reemplaza 172.16.255.164 con tu IP local
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ userId }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Response from server:", data);
-        navigation.goBack();
-      })
-      .catch((error) => {
-        console.error("Error deleting reminder:", error);
-        alert("Error deleting reminder: " + error.message);
+    try {
+      const userId = await AsyncStorage.getItem('userId');
+      const response = await fetch(`https://backendforgetful.onrender.com/reminders/${reminder.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
       });
+      if (!response.ok) {
+        throw new Error('Error deleting reminder');
+      }
+      console.log("Reminder deleted successfully");
+      navigation.goBack();
+    } catch (error) {
+      console.error("Error deleting reminder:", error);
+      alert("Error deleting reminder: " + error.message);
+    }
   };
 
   return (
